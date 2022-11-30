@@ -1,7 +1,14 @@
+import io.qameta.allure.restassured.AllureRestAssured;
+import models.lombok.UserCreationModel;
+import models.lombok.UserCretionResponseModel;
+import models.pojo.CreateUserModel;
+import models.pojo.CreateUserResponseModel;
 import org.junit.jupiter.api.Test;
 
+import static helpers.CustomApiListener.withCustomTemplates;
 import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.is;
 
 public class RestTests {
@@ -30,21 +37,96 @@ public class RestTests {
                 .statusCode(404); // Not Found
     }
     @Test
-    void createUserTest() {
-        String data = "{ \"name\": \"morpheus\", \"job\": \"leader\" }";
-        given()
-                .log().uri()
+    void createUserPojoTest() {
+       // String data = "{ \"name\": \"morpheus\", \"job\": \"leader\" }";
+        CreateUserModel userModel = new CreateUserModel();
+        userModel.setJob("leader");
+        userModel.setName("morpheus");
+
+        CreateUserResponseModel responseModel = given()
+                .log().all()
                 .contentType(JSON)
-                .body(data)
+                .body(userModel)
                 .when()
                 .post("https://reqres.in/api/users")
                 .then()
                 .log().status()
                 .log().body()
                 .statusCode(201) // Created
-                .body("name", is("morpheus"))
-                .body("job", is("leader"));
+                .extract().as(CreateUserResponseModel.class);
+
+        assertThat(responseModel.getJob()).isEqualTo("leader");
+        assertThat(responseModel.getName()).isEqualTo("morpheus");
     }
+
+    @Test
+    void createUserLombokTest() {
+        UserCreationModel userModel = new UserCreationModel();
+        userModel.setJob("leader");
+        userModel.setName("morpheus");
+
+        UserCretionResponseModel responseModel = given()
+                .log().all()
+                .contentType(JSON)
+                .body(userModel)
+                .when()
+                .post("https://reqres.in/api/users")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(201) // Created
+                .extract().as(UserCretionResponseModel.class);
+
+        assertThat(responseModel.getJob()).isEqualTo("leader");
+        assertThat(responseModel.getName()).isEqualTo("morpheus");
+    }
+
+    @Test
+    void createUserWithAllureListenerTest() {
+        UserCreationModel userModel = new UserCreationModel();
+        userModel.setJob("leader");
+        userModel.setName("morpheus");
+
+        UserCretionResponseModel responseModel = given()
+                .filter(new AllureRestAssured())
+                .log().all()
+                .contentType(JSON)
+                .body(userModel)
+                .when()
+                .post("https://reqres.in/api/users")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(201) // Created
+                .extract().as(UserCretionResponseModel.class);
+
+        assertThat(responseModel.getJob()).isEqualTo("leader");
+        assertThat(responseModel.getName()).isEqualTo("morpheus");
+    }
+
+    @Test
+    void createUserWithCustomAllureListenerTest() {
+        UserCreationModel userModel = new UserCreationModel();
+        userModel.setJob("leader");
+        userModel.setName("morpheus");
+
+        UserCretionResponseModel responseModel = given()
+                .filter(withCustomTemplates())
+                .log().all()
+                .contentType(JSON)
+                .body(userModel)
+                .when()
+                .post("https://reqres.in/api/users")
+                .then()
+                .log().status()
+                .log().body()
+                .statusCode(201) // Created
+                .extract().as(UserCretionResponseModel.class);
+
+        assertThat(responseModel.getJob()).isEqualTo("leader");
+        assertThat(responseModel.getName()).isEqualTo("morpheus");
+    }
+
     @Test
     void createUserNegativeTest() {
         given()
