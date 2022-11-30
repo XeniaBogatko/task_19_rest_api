@@ -10,6 +10,8 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.is;
+import static specs.CreateUserSpecs.createUserRequestSpec;
+import static specs.CreateUserSpecs.createUserResponseSpec;
 
 public class RestTests {
     @Test
@@ -127,6 +129,25 @@ public class RestTests {
         assertThat(responseModel.getName()).isEqualTo("morpheus");
     }
 
+    @Test
+    void createUserWithSpecsTest() {
+        UserCreationModel userModel = new UserCreationModel();
+        userModel.setJob("leader");
+        userModel.setName("morpheus");
+
+        UserCretionResponseModel responseModel = given()
+                //given(createUserRequestSpec)
+                .spec(createUserRequestSpec)
+                .body(userModel)
+                .when()
+                .post()
+                .then()
+                .spec(createUserResponseSpec)
+                .extract().as(UserCretionResponseModel.class);
+
+        assertThat(responseModel.getJob()).isEqualTo("leader");
+        assertThat(responseModel.getName()).isEqualTo("morpheus");
+    }
     @Test
     void createUserNegativeTest() {
         given()
