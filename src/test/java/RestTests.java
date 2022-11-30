@@ -10,37 +10,43 @@ import static io.restassured.RestAssured.given;
 import static io.restassured.http.ContentType.JSON;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.hamcrest.Matchers.is;
+import static specs.CreateUserNegativeSpecs.createUserNegativeRequestSpec;
+import static specs.CreateUserNegativeSpecs.createUserNegativeResponseSpec;
 import static specs.CreateUserSpecs.createUserRequestSpec;
 import static specs.CreateUserSpecs.createUserResponseSpec;
+import static specs.DeleteUserSpecs.deleteUserRequestSpec;
+import static specs.DeleteUserSpecs.deleteUserResponseSpec;
+import static specs.GetUserSpecs.getUserRequestSpec;
+import static specs.GetUserSpecs.getUserResponseSpec;
+import static specs.NotFoundUserSpecs.notFoundUserRequestSpec;
+import static specs.NotFoundUserSpecs.notFoundUserResponseSpec;
 
 public class RestTests {
     @Test
     void getSingleUserTest() {
         given()
-                .log().uri()
+                .spec(getUserRequestSpec)
                 .when()
-                .get("https://reqres.in/api/users/2")
+                .get()
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(200) // OK
+                .spec(getUserResponseSpec)
                 .body("data.first_name", is("Janet"))
                 .body("data.last_name", is("Weaver"));
     }
+
     @Test
     void notFoundUserTest() {
         given()
-                .log().uri()
+                .spec(notFoundUserRequestSpec)
                 .when()
-                .get("https://reqres.in/api/users/278127")
+                .get()
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(404); // Not Found
+                .spec(notFoundUserResponseSpec);
     }
+
     @Test
     void createUserPojoTest() {
-       // String data = "{ \"name\": \"morpheus\", \"job\": \"leader\" }";
+        // String data = "{ \"name\": \"morpheus\", \"job\": \"leader\" }";
         CreateUserModel userModel = new CreateUserModel();
         userModel.setJob("leader");
         userModel.setName("morpheus");
@@ -148,26 +154,24 @@ public class RestTests {
         assertThat(responseModel.getJob()).isEqualTo("leader");
         assertThat(responseModel.getName()).isEqualTo("morpheus");
     }
+
     @Test
     void createUserNegativeTest() {
         given()
-                .log().uri()
+                .spec(createUserNegativeRequestSpec)
                 .when()
-                .post("https://reqres.in/api/users")
+                .post()
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(415); // Unsupported Media Type
+                .spec(createUserNegativeResponseSpec);
     }
+
     @Test
     void deleteUserTest() {
         given()
-                .log().uri()
+                .spec(deleteUserRequestSpec)
                 .when()
-                .delete("https://reqres.in/api/users/2")
+                .delete()
                 .then()
-                .log().status()
-                .log().body()
-                .statusCode(204); // No Content
+                .spec(deleteUserResponseSpec);
     }
 }
